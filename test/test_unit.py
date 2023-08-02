@@ -1,29 +1,28 @@
 """Test assemblyai-s2t-blockifier via unit tests."""
+from pathlib import Path
+
 import pytest as pytest
 from steamship import Steamship
 from steamship.plugin.inputs.raw_data_plugin_input import RawDataPluginInput
 from steamship.plugin.request import PluginRequest
 
-from src.api import DeepgramAIBlockifier
-from test import TEST_DATA
+from src.api import DeepgramAITranscriber
+from test import AUDIO_FILES_PATH
+from test.conftest import config
 from test.utils import verify_response
 
 
-def _read_test_audio_file(filename: str) -> str:
-    with (TEST_DATA / filename).open("rb") as f:
-        return f.read()
-
-
-@pytest.mark.parametrize("speaker_detection", (True, False))
-def test_blockifier(speaker_detection: bool):
-    """Test DeepgramAI (S2T) Blockifier without edge cases."""
+@pytest.mark.parametrize("audio_file", AUDIO_FILES_PATH.iterdir())
+@pytest.mark.parametrize("punctuate", [False])
+def test_transcriber(steamship_client: Steamship, audio_file: Path, punctuate: bool) -> None:
+    """Test DeepgramAI (S2T) Transcriber without edge cases."""
     client = Steamship()
-    blockifier = DeepgramAIBlockifier(client=client)
+
+    transcriber = DeepgramAITranscriber(client=client, config=config(punctuate))
+
     request = PluginRequest(
-        data=RawDataPluginInput(
-            data=_read_test_audio_file("test_conversation.mp3"), default_mime_type="audio/mp3"
-        )
+        data=RawDataPluginInput(data=audio_file.open("rb").read())
     )
-    response = blockifier.run(request)
+    response = transcriber.run(request)
 
     verify_response(response)

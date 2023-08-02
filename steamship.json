@@ -1,11 +1,11 @@
 {
-  "author": "",
+  "author": "Sumanth",
   "entrypoint": "src.api.handler",
-  "handle": "deepgram-s2t-blockifier-2",
-  "description": "Blockify audio via Deepgram AI",
+  "handle": "deepgram-transcriber",
+  "description": "Transcribe audio via Deepgram AI",
   "public": true,
   "type": "plugin",
-  "version": "2.2.8",
+  "version": "0.0.5",
   "plugin": {
     "isTrainable": false,
     "transport": "jsonOverHttp",

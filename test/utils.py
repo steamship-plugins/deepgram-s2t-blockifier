@@ -1,14 +1,7 @@
 """Collection of utility function to support testing."""
-import json
-from test import TEST_DATA
-from typing import Any, Dict
 
-from steamship import Tag
-
-
-def load_config() -> Dict[str, Any]:
-    """Load config from test data."""
-    return {}
+from steamship import File, Tag
+from steamship.data import TagKind, TagValueKey
 
 
 def verify_response(response) -> None:
@@ -21,22 +14,34 @@ def verify_response(response) -> None:
 
 def verify_file(file) -> None:
     """Verify the blockified file."""
+    assert isinstance(file, (File, File.CreateRequest))
     assert len(file.tags) == 0
     assert file.blocks is not None
     assert len(file.blocks) == 1
     assert file.blocks[0] is not None
     block = file.blocks[0]
-    assert block.text is not None
-    verify_block_tags(block)
+    verify_block(block)
 
 
-def verify_block_tags(block):
+def verify_block(block):
     """Verify the block."""
+
+    assert block.text is not None
+
     assert len(block.tags) > 0
-    assert isinstance(block.tags[0], (Tag, Tag.CreateRequest))
+    assert isinstance(block.tags[0], Tag)
+
+    unique_tag_kinds = set()
 
     for tag in block.tags:
-        assert tag.name is not None
-        if tag.kind != "topic_summary":
-            assert tag.value["start_time"] is not None
-            assert tag.value["end_time"] is not None
+        unique_tag_kinds.add(tag.kind)
+        if tag.kind == TagKind.TIMESTAMP:
+            assert TagValueKey.START_TIME_S in tag.value
+            assert tag.value[TagValueKey.START_TIME_S] is not None
+            assert TagValueKey.END_TIME_S in tag.value
+            assert tag.value[TagValueKey.END_TIME_S] is not None
+
+    assert TagKind.TOPIC in unique_tag_kinds
+    assert TagKind.SUMMARY in unique_tag_kinds
+    assert TagKind.TIMESTAMP in unique_tag_kinds
+    assert TagKind.TOKENIZATION in unique_tag_kinds

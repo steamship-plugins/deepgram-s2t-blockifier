@@ -1,2 +1,2 @@
-steamship===2.2.1
+steamship==2.3.0b
 deepgram-sdk==2.1.0
